@@ -47,6 +47,8 @@ if (process.env.NODE_ENV === 'production') {
   sourceMapSupport.install();
 }
 
+const { exec } = require('child_process');
+
 const isDebug =
   process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
 
@@ -117,6 +119,23 @@ function showApp() {
     }
     mainWindow.show();
   }
+}
+
+function findFirefoxPath() {
+  const programFilesPath = process.env.ProgramFiles;
+  const programFilesX86Path = process.env['ProgramFiles(x86)'];
+
+  const firefoxPath1 = path.join(programFilesPath, 'Mozilla Firefox', 'firefox.exe');
+  const firefoxPath2 = path.join(programFilesX86Path, 'Mozilla Firefox', 'firefox.exe');
+
+  if (fs.existsSync(firefoxPath1)) {
+    return firefoxPath1;
+  } else if (fs.existsSync(firefoxPath2)) {
+    return firefoxPath2;
+  } else {
+    throw new Error('Firefox installation not found.');
+  }
+
 }
 
 function openLocationManagerPanel() {
@@ -628,6 +647,17 @@ app
           }
           mainWindow.show();
         }
+      });
+
+      ipcMain.on('open-files-in-firefox', (event, selectedEntries) => {
+        let firefoxPath = findFirefoxPath();
+        selectedEntries.forEach(entry => {
+          exec(`"${firefoxPath}" -P Blue "${entry.path}"`, (error, stdout, stderr) => {
+            if (error) {
+              console.error(`Error opening file ${entry.path} in Firefox: `, error.message);
+            }
+          });
+        });
       });
 
       ipcMain.on('create-new-window', (e, url) => {

@@ -272,6 +272,13 @@ function FileMenu(props: Props) {
     }
   }
 
+  function openInFirefox() {
+    onClose();
+    const { ipcRenderer } = require('electron');
+
+    ipcRenderer.send('open-files-in-firefox', selectedEntries)
+  }
+
   const menuItems = [];
 
   const pathLowerCase = selectedFilePath.toLowerCase();
@@ -315,6 +322,18 @@ function FileMenu(props: Props) {
           <ParentFolderIcon />
         </ListItemIcon>
         <ListItemText primary={t('core:openParentFolder')} />
+      </MenuItem>,
+    );
+    menuItems.push(
+      <MenuItem
+        key="fileMenuOpenFileFirefox"
+        data-tid="fileMenuOpenFileFirefox"
+        onClick={openInFirefox}
+      >
+        <ListItemIcon>
+          <ParentFolderIcon />
+        </ListItemIcon>
+        <ListItemText primary={t('core:openInFirefox')} />
       </MenuItem>,
     );
   }
